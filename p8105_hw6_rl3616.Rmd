@@ -7,8 +7,9 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(broom)
+library(modelr)
 ```
-
+## Problem 1
 
 ```{r data clean}
 homicides <- read.csv("data/homicide-data.csv")
@@ -54,7 +55,72 @@ city_results <- homicides_df |>
       family = binomial
     )),
     tidy = map(model, ~ tidy(.x, exponentiate = TRUE, conf.int = TRUE))
-  ) |>
+  ) |>   #Seems I got correct result, but an unknown warning occurred.
   unnest(tidy) |>
-  filter(term == "victim_sexMale")
+  filter(term == "victim_sexMale") |> 
+  select(-data, -model)
+```  
+
+```{r estimated ORs and CIs for each city, fig.width=8, fig.height=8, warning=FALSE}
+city_results |> 
+  ggplot(aes(
+    x = fct_reorder(city_state, estimate),
+    y = estimate
+  )) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  coord_flip() +
+  labs(
+    x = "City",
+    y = "Adjusted OR (Male vs Female)",
+    title = "Adjusted Odds Ratios of Solved Homicides by City"
+  )
 ```
+
+According to the chart, most cities have odds ratios less than 1 for the “male vs female” contrast. Since female victims serve as the reference category in the model, an OR < 1 indicates that homicide cases involving male victims are less likely to be solved. In other words, cases with female victims tend to have higher odds of being solved in most cities.
+
+## Problem 2
+```{r}
+library(p8105.datasets)
+data("weather_df")
+
+set.seed(123)
+
+weather_boot <- weather_df |> 
+  bootstrap(n = 5000, id = "strap_id")
+```
+
+```{r estimate}
+boot_results <- weather_boot |>
+  mutate(
+    model  = map(strap, ~ lm(tmax ~ tmin + prcp, data = .x)),
+    glnc   = map(model, glance),   # get R^2
+    tidy   = map(model, tidy)      # get betas
+  ) |>
+  mutate(
+    r_sq = map_dbl(glnc, "r.squared"),
+    beta_ratio = map_dbl(tidy, ~ {
+      b1 = .x |> filter(term == "tmin") |> pull(estimate)
+      b2 = .x |> filter(term == "prcp") |> pull(estimate)
+      b1 / b2
+    })
+  ) |>
+  select(strap_id, r_sq, beta_ratio)
+
+```
+
+```{r}
+boot_results |>
+  pivot_longer(r_sq:beta_ratio,
+               names_to = "param",
+               values_to = "estimate") |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram() +
+  facet_wrap(~ param, scales = "free_x") +
+  labs(x = "Estimate", y = "Count",
+       title = "Boostrap distribution of R^2 amd beta1/beta2")
+  
+         
+         
+```
+
