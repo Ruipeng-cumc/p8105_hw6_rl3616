@@ -122,5 +122,25 @@ boot_results |>
   
          
          
-```
+```    
 
+Based on the plots, both distributions exhibit varying degrees of left skew.
+The skewness is more pronounced for the beta ratio, with a peak around 180 and a mean that lies to the left of the mode.
+In contrast, the distribution of R^2 is closer to normal, showing only slight left skew, with a peak between 0.94 and 0.942 and a mean that is also positioned to the left of the peak.
+
+```{r}
+ci_results <- boot_results |>
+  pivot_longer(r_sq:beta_ratio,
+               names_to = "param",
+               values_to = "estimate") |> 
+  group_by(param) |> 
+  summarise(
+    ci_low = quantile(estimate, 0.025),
+    ci_high = quantile(estimate, 0.975)
+  )
+
+ci_results
+```   
+
+As result, 95% confidence interval for $\hat{r}^2$ are (`r ci_results$ci_low[2]`, `r ci_results$ci_high[2]`);
+95% confidence interval for $\frac{\hat{\beta_1}}{\hat{\beta_2}}$ are (`r ci_results$ci_low[1]`, `r ci_results$ci_high[1]`)
