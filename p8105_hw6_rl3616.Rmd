@@ -10,7 +10,7 @@ library(broom)
 ```
 
 
-```{r}
+```{r data clean}
 homicides <- read.csv("data/homicide-data.csv")
 
 homicides_df <- homicides |> 
@@ -27,4 +27,34 @@ homicides_df <- homicides |>
     victim_race %in% c("White", "Black")
     )
 
+```
+
+```{r for baltimore}
+baltimore_mod <- homicides_df |>
+  filter(city_state == "Baltimore, MD")
+
+baltimore_mod <- glm(
+  resolved ~ victim_age + victim_sex + victim_race,
+  data = homicides_df,
+  family = binomial
+)
+
+broom::tidy(baltimore_mod, exponentiate = TRUE, conf.int = TRUE) |> 
+  filter(term == "victim_sexMale")
+```
+
+```{r for all city}
+city_results <- homicides_df |>
+  group_by(city_state) |>
+  nest() |>
+  mutate(
+    model = map(data, ~ glm(
+      resolved ~ victim_age + victim_sex + victim_race,
+      data = .x,
+      family = binomial
+    )),
+    tidy = map(model, ~ tidy(.x, exponentiate = TRUE, conf.int = TRUE))
+  ) |>
+  unnest(tidy) |>
+  filter(term == "victim_sexMale")
 ```
