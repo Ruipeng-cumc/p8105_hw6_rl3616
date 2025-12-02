@@ -1,0 +1,30 @@
+---
+title: "p8105_hw5_rl3616"
+author: "Ruipeng Li"
+date: "`r format(Sys.Date())`"
+output: github_document
+---
+```{r}
+library(tidyverse)
+library(broom)
+```
+
+
+```{r}
+homicides <- read.csv("data/homicide-data.csv")
+
+homicides_df <- homicides |> 
+  janitor::clean_names() |>
+  mutate(
+    city_state = str_c(city, ", ", state),
+    resolved = ifelse(disposition == "Closed by arrest", 1, 0),
+    victim_age = str_trim(victim_age),
+    victim_age = na_if(victim_age, "Unknown"),
+    victim_age = parse_number(victim_age)
+  ) |> 
+  filter(
+    !city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL"),
+    victim_race %in% c("White", "Black")
+    )
+
+```
