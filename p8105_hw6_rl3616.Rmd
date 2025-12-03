@@ -144,3 +144,73 @@ ci_results
 
 As result, 95% confidence interval for $\hat{r}^2$ are (`r ci_results$ci_low[2]`, `r ci_results$ci_high[2]`);
 95% confidence interval for $\frac{\hat{\beta_1}}{\hat{\beta_2}}$ are (`r ci_results$ci_low[1]`, `r ci_results$ci_high[1]`)
+
+
+## Problem 3
+```{r cleaning}
+birthweight_df <- read.csv("data/birthweight.csv") |> 
+  janitor::clean_names() |> 
+  mutate(
+    babysex = ifelse(babysex == 1, "male", "female"),
+    frace = recode(frace,
+                   `1` = "White",
+                   `2` = "Black",
+                   `3` = "Asian",
+                   `4` = "Puerto Rican", 
+                   `8` = "Other", 
+                   `9` = "Unknown"),
+    mrace = recode(mrace,
+                   `1` = "White",
+                   `2` = "Black",
+                   `3` = "Asian",
+                   `4` = "Puerto Rican", 
+                   `8` = "Other"),
+    malform = ifelse(malform == 0, "absent", "present")
+  ) |> 
+  rename(
+    baby_sex               = babysex,
+    baby_head_circ        = bhead,
+    baby_length           = blength,
+    baby_weight           = bwt,
+    
+    mother_weight_delivery = delwt,
+    family_income          = fincome,
+    father_race            = frace,
+    
+    gestational_age        = gaweeks,
+    malformation           = malform,
+    
+    menarche_age           = menarche,
+    mother_height          = mheight,
+    mother_age_delivery    = momage,
+    
+    mother_race            = mrace,
+    parity                 = parity,
+    
+    prev_lowbirth_count    = pnumlbw,
+    prev_small_gest_age    = pnumsga,
+    
+    pre_pregnancy_bmi      = ppbmi,
+    mother_pre_preg_weight = ppwt,
+    
+    cigarettes_per_day     = smoken,
+    weight_gain_pregnancy  = wtgain
+  )
+```
+
+```{r}
+bw_model_main <- lm(
+  baby_weight ~ 
+    gestational_age +
+    baby_length +
+    baby_head_circ +
+    mother_height +
+    pre_pregnancy_bmi +
+    weight_gain_pregnancy +
+    cigarettes_per_day +
+    baby_sex,
+  data = birthweight_df
+)
+summary(bw_model_main)
+
+```
