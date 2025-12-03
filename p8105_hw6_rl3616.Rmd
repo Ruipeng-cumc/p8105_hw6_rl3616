@@ -239,12 +239,20 @@ birthweight_df |>
 The residuals in the graph are mostly randomly scattered, without any issues of arcing or diffusion.   
 The point cloud is distributed around 0, and there is no systematic bias, which indicates that my model fits very stably and there is no obvious heteroscedasticity problem.
 
-```{r}
-
+```{r small model}
+bw_model_small <- lm(
+  baby_weight ~ baby_length + gestational_age,
+  data = birthweight_df
+)
+summary(bw_model_small)
 ```
 
-```{r}
-
+```{r big model}
+bw_model_big <- lm(
+  baby_weight ~ baby_head_circ * baby_length * baby_sex,
+  data = birthweight_df
+)
+summary(bw_model_big)
 ```
 
 ```{r}
