@@ -198,7 +198,14 @@ birthweight_df <- read.csv("data/birthweight.csv") |>
   )
 ```
 
-```{r}
+# Main model  
+To construct my main model, I used a data-driven approach.
+I started by fitting a large model that included all variables that might reasonably affect an infant’s birthweight. This allowed me to see which predictors were truly meaningful and which ones contributed very little.
+
+Based on the full model, I examined significance levels, effect sizes, and practical relevance. Variables that appeared unimportant or had minimal influence were removed to avoid overfitting and to make the model easier to interpret.
+
+After selecting the predictors that showed clearer and more consistent effects, I built a simplified and more interpretable main model. This refined model strikes a balance between predictive performance and interpretability, and it serves as the foundation for comparing the other two models in the analysis.
+```{r Basic model}
 bw_model_main <- lm(
   baby_weight ~ 
     gestational_age +
@@ -212,5 +219,38 @@ bw_model_main <- lm(
   data = birthweight_df
 )
 summary(bw_model_main)
+
+```
+
+```{r Basic model plot}
+birthweight_df |> 
+  add_predictions(bw_model_main) |> 
+  add_residuals(bw_model_main) |> 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.2) +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(
+    title = "Residuals vs Fitted - Main Model",
+    x = "Predicted Birthweight",
+    y = "Residuals"
+  )
+```
+
+The residuals in the graph are mostly randomly scattered, without any issues of arcing or diffusion.   
+The point cloud is distributed around 0, and there is no systematic bias, which indicates that my model fits very stably and there is no obvious heteroscedasticity problem.
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
 
 ```
